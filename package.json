@@ -1,0 +1,13 @@
+{
+  "name": "what-changed",
+  "private": true,
+  "version": "1.0.0",
+  "description": "WhatChanged — Salesforce Change Intelligence Multi-Framework React App",
+  "scripts": {
+    "dev": "npm --prefix force-app/main/default/uiBundles/whatChangedApp run dev",
+    "build": "npm --prefix force-app/main/default/uiBundles/whatChangedApp run build",
+    "test": "npm --prefix force-app/main/default/uiBundles/whatChangedApp run test",
+    "test:ui": "npm --prefix force-app/main/default/uiBundles/whatChangedApp run test",
+    "install:ui": "npm --prefix force-app/main/default/uiBundles/whatChangedApp install"
+  }
+}

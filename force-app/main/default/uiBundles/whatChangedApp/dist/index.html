@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhatChanged — Salesforce Change Intelligence</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <script>
+      (function() {
+        try {
+          const theme = localStorage.getItem('whatchanged_theme') || 'dark';
+          if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-CHIQCruA.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-B9_AwwJ-.css">
+  </head>
+  <body class="bg-background text-foreground antialiased selection:bg-brand-500 selection:text-white min-h-screen">
+    <div id="root"></div>
+  </body>
+</html>

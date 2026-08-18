@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <!-- Apex REST Controllers, Business Services, & Unit Tests -->
+    <types>
+        <members>WhatChangedApi</members>
+        <members>WhatChangedApiTest</members>
+        <members>WhatChangedAuditRepository</members>
+        <members>WhatChangedAuditService</members>
+        <members>WhatChangedAuditServiceTest</members>
+        <members>WhatChangedClassifier</members>
+        <members>WhatChangedClassifierTest</members>
+        <members>WhatChangedDtos</members>
+        <members>WhatChangedEventNormalizer</members>
+        <members>WhatChangedEventNormalizerTest</members>
+        <members>WhatChangedSecurity</members>
+        <members>WhatChangedSecurityTest</members>
+        <name>ApexClass</name>
+    </types>
+
+    <!-- Custom Application for App Launcher -->
+    <types>
+        <members>WhatChanged</members>
+        <name>CustomApplication</name>
+    </types>
+
+    <!-- Security Gate Custom Permission -->
+    <types>
+        <members>WhatChanged_Access</members>
+        <name>CustomPermission</name>
+    </types>
+
+    <!-- Assignable Permission Set -->
+    <types>
+        <members>WhatChanged_User</members>
+        <name>PermissionSet</name>
+    </types>
+
+    <!-- Native Multi-Framework React Application Bundle -->
+    <types>
+        <members>whatChangedApp</members>
+        <name>UIBundle</name>
+    </types>
+
+    <version>67.0</version>
+</Package>
