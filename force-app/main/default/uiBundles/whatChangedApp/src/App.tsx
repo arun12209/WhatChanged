@@ -38,10 +38,12 @@ export const App: React.FC = () => {
   const {
     filters,
     setRange,
+    setCustomDates,
     setCategory,
     setSeverity,
     setSearch,
     setActor,
+    setSection,
     setIncidentMode,
     clearFilters,
     hasActiveFilters,
@@ -154,8 +156,10 @@ export const App: React.FC = () => {
             error={eventsError}
             filters={filters}
             onRangeChange={setRange}
+            onCustomDatesChange={setCustomDates}
             onCategoryChange={setCategory}
             onSeverityChange={setSeverity}
+            onSectionChange={setSection}
             onSearchChange={setSearch}
             onActorChange={setActor}
             onIncidentModeToggle={(en, time, win) => setIncidentMode(en, time, win)}

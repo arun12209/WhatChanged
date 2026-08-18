@@ -8,6 +8,7 @@ import {
 import { ViewTab } from '../../domain/types';
 import { Button } from '../common/Button';
 import { BrandLogo } from '../common/BrandLogo';
+import { UserMenu } from './UserMenu';
 
 interface HeaderProps {
   currentTab: ViewTab;
@@ -155,10 +156,12 @@ export const Header: React.FC<HeaderProps> = ({
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
 
-            {/* User Avatar */}
-            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
-              AK
-            </div>
+            {/* User Profile & Menu */}
+            <UserMenu
+              environment={environment}
+              onNavigateTab={onTabChange}
+              onOpenCommandPalette={onOpenCommandPalette}
+            />
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
-    <!-- Apex REST Controllers, Business Services, & Unit Tests -->
+    <!-- Apex Classes for WhatChanged Backend & REST Endpoints -->
     <types>
         <members>WhatChangedApi</members>
         <members>WhatChangedApiTest</members>
@@ -17,29 +17,23 @@
         <name>ApexClass</name>
     </types>
 
-    <!-- Custom Application for App Launcher -->
-    <types>
-        <members>WhatChanged</members>
-        <name>CustomApplication</name>
-    </types>
-
-    <!-- Security Gate Custom Permission -->
+    <!-- Custom Permission for Access Control -->
     <types>
         <members>WhatChanged_Access</members>
         <name>CustomPermission</name>
     </types>
 
-    <!-- Assignable Permission Set -->
+    <!-- Permission Set for Users and Admins -->
     <types>
         <members>WhatChanged_User</members>
         <name>PermissionSet</name>
     </types>
 
-    <!-- Native Multi-Framework React Application Bundle -->
+    <!-- Custom Application Definition -->
     <types>
-        <members>whatChangedApp</members>
-        <name>UIBundle</name>
+        <members>WhatChanged</members>
+        <name>CustomApplication</name>
     </types>
 
-    <version>67.0</version>
+    <version>66.0</version>
 </Package>

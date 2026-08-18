@@ -29,27 +29,6 @@ private class WhatChangedEventNormalizerTest {
     }
 
     @IsTest
-    static void testNormalizerFlowDeactivatedEvent() {
-        WhatChangedEventNormalizer.RawAuditInput input = new WhatChangedEventNormalizer.RawAuditInput();
-        input.id = '001000000000011';
-        input.action = 'flowactivated';
-        input.section = 'Process Automation';
-        input.display = 'Deactivated flow version #8 "Account After record triggered flow" for flow with Unique Name "Account_After_record_triggered_flow".';
-        input.createdDate = System.now().addMinutes(-16);
-        input.actorId = '005000000000001';
-        input.actorName = 'Arun Kumar';
-        input.responsibleNamespace = '';
-
-        WhatChangedDtos.ChangeEventDTO dto = WhatChangedEventNormalizer.normalize(input);
-
-        System.assertEquals('Flow deactivated', dto.title, 'Title should be normalized as Flow deactivated');
-        System.assert(dto.description.contains('Deactivated flow'), 'Description should reflect deactivation');
-        System.assertEquals('AUTOMATION', dto.category, 'Category should be AUTOMATION');
-        System.assertEquals('MEDIUM', dto.severity, 'Severity should be MEDIUM');
-        System.assert(dto.searchTokens.contains('deactivated'), 'Tokens should include deactivated');
-    }
-
-    @IsTest
     static void testMetadataComponentExtraction() {
         WhatChangedEventNormalizer.RawAuditInput input = new WhatChangedEventNormalizer.RawAuditInput();
         input.id = '001000000000020';

@@ -4,15 +4,18 @@ import { ChangeEvent } from '../../domain/types';
 import { getCategoryMeta } from '../../domain/categories';
 import { SeverityBadge } from '../../components/common/Badge';
 import { Card } from '../../components/common/Card';
+import { HighlightText } from '../../components/common/HighlightText';
 
 interface RecentChangesListProps {
   events: ChangeEvent[];
+  searchQuery?: string;
   onEventClick: (event: ChangeEvent) => void;
   onViewAllClick: () => void;
 }
 
 export const RecentChangesList: React.FC<RecentChangesListProps> = ({
   events,
+  searchQuery,
   onEventClick,
   onViewAllClick,
 }) => {
@@ -62,17 +65,17 @@ export const RecentChangesList: React.FC<RecentChangesListProps> = ({
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                    {evt.title}
+                    <HighlightText text={evt.title} query={searchQuery} />
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md">
-                    {evt.description}
+                    <HighlightText text={evt.description} query={searchQuery} />
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 flex-shrink-0">
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-300 hidden sm:inline">
-                  {evt.actor.name}
+                  <HighlightText text={evt.actor.name} query={searchQuery} />
                 </span>
                 <SeverityBadge severity={evt.severity} size="sm" />
               </div>

@@ -11,4 +11,13 @@ package.xml
 # LWC Jest
 **/__tests__/**
 
+# Dependencies & Build Artefacts
 node_modules/
+**/node_modules/**
+**/.git/**
+**/.DS_Store
+**/coverage/**
+
+# Multi-framework UI Bundle local development source
+**/uiBundles/**
+

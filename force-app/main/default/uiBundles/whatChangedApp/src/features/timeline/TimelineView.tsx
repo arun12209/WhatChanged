@@ -31,8 +31,10 @@ interface TimelineViewProps {
   error: Error | null;
   filters: TimelineFilters;
   onRangeChange: (range: DateRangeOption) => void;
+  onCustomDatesChange?: (from?: string, to?: string) => void;
   onCategoryChange: (category: ChangeCategory | 'ALL') => void;
   onSeverityChange: (severity: ChangeSeverity | 'ALL') => void;
+  onSectionChange?: (section?: string) => void;
   onSearchChange: (search: string) => void;
   onActorChange?: (actorId?: string, actorName?: string) => void;
   onIncidentModeToggle: (enabled: boolean, time?: string, window?: number) => void;
@@ -52,8 +54,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   error,
   filters,
   onRangeChange,
+  onCustomDatesChange,
   onCategoryChange,
   onSeverityChange,
+  onSectionChange,
   onSearchChange,
   onActorChange,
   onIncidentModeToggle,
@@ -156,8 +160,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       <FilterBar
         filters={filters}
         onRangeChange={onRangeChange}
+        onCustomDatesChange={onCustomDatesChange}
         onCategoryChange={onCategoryChange}
         onSeverityChange={onSeverityChange}
+        onSectionChange={onSectionChange}
         onSearchChange={onSearchChange}
         onActorChange={onActorChange}
         onIncidentModeToggle={(en) => onIncidentModeToggle(en)}
@@ -200,6 +206,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                 <ChangeStoryCard
                   key={story.id}
                   story={story}
+                  searchQuery={filters.search}
                   onEventClick={onEventClick}
                 />
               ))}
@@ -213,6 +220,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
               dateHeader={group.dateHeader}
               events={group.events}
               isCompact={isCompact}
+              searchQuery={filters.search}
               onEventClick={onEventClick}
             />
           ))}

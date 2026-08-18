@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { ChangeStory, ChangeEvent } from '../../domain/types';
 import { CategoryBadge, SeverityBadge } from '../../components/common/Badge';
+import { HighlightText } from '../../components/common/HighlightText';
 
 interface ChangeStoryCardProps {
   story: ChangeStory;
+  searchQuery?: string;
   onEventClick: (event: ChangeEvent) => void;
 }
 
-export const ChangeStoryCard: React.FC<ChangeStoryCardProps> = ({ story, onEventClick }) => {
+export const ChangeStoryCard: React.FC<ChangeStoryCardProps> = ({ story, searchQuery, onEventClick }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -28,13 +30,13 @@ export const ChangeStoryCard: React.FC<ChangeStoryCardProps> = ({ story, onEvent
                 Change Story
               </span>
               <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                {story.title}
+                <HighlightText text={story.title} query={searchQuery} />
               </h4>
             </div>
 
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
               <span className="font-medium text-slate-700 dark:text-slate-300">
-                {story.actorName}
+                <HighlightText text={story.actorName} query={searchQuery} />
               </span>
               <span>·</span>
               <span>{story.timeSpanFormatted}</span>
@@ -69,8 +71,12 @@ export const ChangeStoryCard: React.FC<ChangeStoryCardProps> = ({ story, onEvent
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span className="font-mono text-slate-400 tabular-nums">{evt.formattedTime}</span>
-                <span className="font-medium text-slate-900 dark:text-slate-100 truncate">{evt.title}</span>
-                <span className="text-slate-500 dark:text-slate-400 truncate hidden sm:inline">— {evt.description}</span>
+                <span className="font-medium text-slate-900 dark:text-slate-100 truncate">
+                  <HighlightText text={evt.title} query={searchQuery} />
+                </span>
+                <span className="text-slate-500 dark:text-slate-400 truncate hidden sm:inline">
+                  — <HighlightText text={evt.description} query={searchQuery} />
+                </span>
               </div>
               <SeverityBadge severity={evt.severity} size="sm" />
             </div>

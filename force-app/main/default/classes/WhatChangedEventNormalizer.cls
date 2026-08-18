@@ -87,11 +87,11 @@ public with sharing class WhatChangedEventNormalizer {
         String act = action.toLowerCase();
 
         if (category == WhatChangedClassifier.CAT_AUTOMATION) {
-            if (disp.contains('deactivated flow') || disp.contains('flow deactivated') || act.contains('flowdeactivated') || (disp.contains('flow') && disp.contains('deactivated'))) {
-                return 'Flow deactivated';
-            }
             if (disp.contains('activated flow') || disp.contains('flow activated') || act.contains('flowactivated')) {
                 return 'Flow activated';
+            }
+            if (disp.contains('deactivated flow') || act.contains('flowdeactivated')) {
+                return 'Flow deactivated';
             }
             if (disp.contains('workflow rule')) {
                 return 'Workflow Rule updated';

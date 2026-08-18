@@ -51,9 +51,20 @@ export function useTimelineFilters(initialOverrides?: Partial<TimelineFilters>) 
     []
   );
 
+  const setCustomDates = useCallback((customFrom?: string, customTo?: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      range: 'custom',
+      customFrom,
+      customTo,
+    }));
+  }, []);
+
   const clearFilters = useCallback(() => {
     setFilters({
       range: 'today',
+      customFrom: undefined,
+      customTo: undefined,
       category: 'ALL',
       severity: 'ALL',
       search: undefined,
@@ -73,6 +84,8 @@ export function useTimelineFilters(initialOverrides?: Partial<TimelineFilters>) 
       filters.actorName ||
       filters.section ||
       filters.range !== 'today' ||
+      filters.customFrom ||
+      filters.customTo ||
       filters.incidentModeEnabled
   );
 
@@ -80,6 +93,7 @@ export function useTimelineFilters(initialOverrides?: Partial<TimelineFilters>) 
     filters,
     setFilters,
     setRange,
+    setCustomDates,
     setCategory,
     setSeverity,
     setSearch,

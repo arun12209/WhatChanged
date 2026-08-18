@@ -2,16 +2,19 @@ import React from 'react';
 import { ChangeEvent } from '../../domain/types';
 import { getCategoryMeta } from '../../domain/categories';
 import { CategoryBadge, SeverityBadge } from '../../components/common/Badge';
+import { HighlightText } from '../../components/common/HighlightText';
 
 interface TimelineEventCardProps {
   event: ChangeEvent;
   isCompact?: boolean;
+  searchQuery?: string;
   onClick: (event: ChangeEvent) => void;
 }
 
 export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
   event,
   isCompact = false,
+  searchQuery,
   onClick,
 }) => {
   const catMeta = getCategoryMeta(event.category);
@@ -37,16 +40,16 @@ export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
             <Icon className="w-3.5 h-3.5" />
           </div>
           <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-            {event.title}
+            <HighlightText text={event.title} query={searchQuery} />
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-sm hidden md:inline">
-            — {event.description}
+            — <HighlightText text={event.description} query={searchQuery} />
           </span>
         </div>
 
         <div className="flex items-center gap-2.5 flex-shrink-0">
           <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-            {event.actor.name}
+            <HighlightText text={event.actor.name} query={searchQuery} />
           </span>
           <CategoryBadge category={event.category} showIcon={false} size="sm" />
           <SeverityBadge severity={event.severity} size="sm" />
@@ -76,7 +79,7 @@ export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
           <div className="space-y-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-                {event.title}
+                <HighlightText text={event.title} query={searchQuery} />
               </span>
               <span className="text-xs font-mono text-slate-400 dark:text-slate-500 tabular-nums">
                 · {event.relativeTime} ({event.formattedTime})
@@ -84,7 +87,7 @@ export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl">
-              {event.description}
+              <HighlightText text={event.description} query={searchQuery} />
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -92,7 +95,7 @@ export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
               <SeverityBadge severity={event.severity} size="sm" />
               {event.section && (
                 <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80">
-                  {event.section}
+                  <HighlightText text={event.section} query={searchQuery} />
                 </span>
               )}
             </div>
@@ -103,7 +106,7 @@ export const TimelineEventCard: React.FC<TimelineEventCardProps> = ({
         <div className="flex items-center gap-2 flex-shrink-0 text-right">
           <div className="hidden sm:block">
             <div className="text-xs font-semibold text-slate-900 dark:text-slate-200">
-              {event.actor.name}
+              <HighlightText text={event.actor.name} query={searchQuery} />
             </div>
             {event.delegatedUser && (
               <div className="text-[10px] text-slate-400">

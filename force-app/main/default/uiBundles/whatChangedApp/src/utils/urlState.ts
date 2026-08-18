@@ -9,6 +9,8 @@ export function readFiltersFromUrl(): TimelineFilters {
   const range = (params.get('range') as DateRangeOption) || 'today';
   const category = (params.get('category') as ChangeCategory | 'ALL') || 'ALL';
   const severity = (params.get('severity') as ChangeSeverity | 'ALL') || 'ALL';
+  const customFrom = params.get('customFrom') || undefined;
+  const customTo = params.get('customTo') || undefined;
   const actorId = params.get('actorId') || undefined;
   const actorName = params.get('actorName') || undefined;
   const section = params.get('section') || undefined;
@@ -19,6 +21,8 @@ export function readFiltersFromUrl(): TimelineFilters {
 
   return {
     range,
+    customFrom,
+    customTo,
     category,
     severity,
     actorId,
@@ -37,6 +41,8 @@ export function writeFiltersToUrl(filters: TimelineFilters): void {
   const params = new URLSearchParams();
 
   if (filters.range && filters.range !== 'today') params.set('range', filters.range);
+  if (filters.customFrom) params.set('customFrom', filters.customFrom);
+  if (filters.customTo) params.set('customTo', filters.customTo);
   if (filters.category && filters.category !== 'ALL') params.set('category', filters.category);
   if (filters.severity && filters.severity !== 'ALL') params.set('severity', filters.severity);
   if (filters.actorId) params.set('actorId', filters.actorId);

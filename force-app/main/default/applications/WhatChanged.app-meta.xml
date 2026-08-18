@@ -13,6 +13,7 @@
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
     <label>WhatChanged</label>
     <navType>Standard</navType>
+    <tabs>standard-home</tabs>
     <uiBundle>c__whatChangedApp</uiBundle>
     <uiType>Lightning</uiType>
 </CustomApplication>

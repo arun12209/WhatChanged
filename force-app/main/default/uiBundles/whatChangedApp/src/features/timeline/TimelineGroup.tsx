@@ -6,6 +6,7 @@ interface TimelineGroupProps {
   dateHeader: string;
   events: ChangeEvent[];
   isCompact?: boolean;
+  searchQuery?: string;
   onEventClick: (event: ChangeEvent) => void;
 }
 
@@ -13,6 +14,7 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
   dateHeader,
   events,
   isCompact = false,
+  searchQuery,
   onEventClick,
 }) => {
   return (
@@ -35,6 +37,7 @@ export const TimelineGroup: React.FC<TimelineGroupProps> = ({
             key={evt.id}
             event={evt}
             isCompact={isCompact}
+            searchQuery={searchQuery}
             onClick={onEventClick}
           />
         ))}

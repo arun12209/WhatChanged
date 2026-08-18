@@ -100,6 +100,20 @@ export async function fetchEvents(
     } else if (filters.range === '30d') {
       const past30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       queryParams.append('from', past30d.toISOString());
+    } else if (filters.range === 'custom') {
+      if (filters.customFrom) {
+        const fromDate = new Date(filters.customFrom);
+        if (!isNaN(fromDate.getTime())) {
+          queryParams.append('from', fromDate.toISOString());
+        }
+      }
+      if (filters.customTo) {
+        const toDate = new Date(filters.customTo);
+        if (!isNaN(toDate.getTime())) {
+          toDate.setHours(23, 59, 59, 999);
+          queryParams.append('to', toDate.toISOString());
+        }
+      }
     }
   }
 
@@ -159,8 +173,22 @@ function filterMockEvents(
       minDateMs = now.getTime() - 7 * 24 * 60 * 60 * 1000;
     } else if (filters.range === '30d') {
       minDateMs = now.getTime() - 30 * 24 * 60 * 60 * 1000;
+    } else if (filters.range === 'custom') {
+      if (filters.customFrom) {
+        const fromMs = new Date(filters.customFrom).getTime();
+        if (!isNaN(fromMs)) {
+          list = list.filter((e) => new Date(e.createdDate).getTime() >= fromMs);
+        }
+      }
+      if (filters.customTo) {
+        const toDate = new Date(filters.customTo);
+        if (!isNaN(toDate.getTime())) {
+          toDate.setHours(23, 59, 59, 999);
+          list = list.filter((e) => new Date(e.createdDate).getTime() <= toDate.getTime());
+        }
+      }
     }
-    if (minDateMs > 0) {
+    if (minDateMs > 0 && filters.range !== 'custom') {
       list = list.filter((e) => new Date(e.createdDate).getTime() >= minDateMs);
     }
   }
