@@ -102,15 +102,16 @@ export async function fetchEvents(
       queryParams.append('from', past30d.toISOString());
     } else if (filters.range === 'custom') {
       if (filters.customFrom) {
-        const fromDate = new Date(filters.customFrom);
+        const [fYear, fMonth, fDay] = filters.customFrom.split('-').map(Number);
+        const fromDate = new Date(fYear, fMonth - 1, fDay, 0, 0, 0, 0);
         if (!isNaN(fromDate.getTime())) {
           queryParams.append('from', fromDate.toISOString());
         }
       }
       if (filters.customTo) {
-        const toDate = new Date(filters.customTo);
+        const [tYear, tMonth, tDay] = filters.customTo.split('-').map(Number);
+        const toDate = new Date(tYear, tMonth - 1, tDay, 23, 59, 59, 999);
         if (!isNaN(toDate.getTime())) {
-          toDate.setHours(23, 59, 59, 999);
           queryParams.append('to', toDate.toISOString());
         }
       }
@@ -175,16 +176,17 @@ function filterMockEvents(
       minDateMs = now.getTime() - 30 * 24 * 60 * 60 * 1000;
     } else if (filters.range === 'custom') {
       if (filters.customFrom) {
-        const fromMs = new Date(filters.customFrom).getTime();
+        const [fYear, fMonth, fDay] = filters.customFrom.split('-').map(Number);
+        const fromMs = new Date(fYear, fMonth - 1, fDay, 0, 0, 0, 0).getTime();
         if (!isNaN(fromMs)) {
           list = list.filter((e) => new Date(e.createdDate).getTime() >= fromMs);
         }
       }
       if (filters.customTo) {
-        const toDate = new Date(filters.customTo);
-        if (!isNaN(toDate.getTime())) {
-          toDate.setHours(23, 59, 59, 999);
-          list = list.filter((e) => new Date(e.createdDate).getTime() <= toDate.getTime());
+        const [tYear, tMonth, tDay] = filters.customTo.split('-').map(Number);
+        const toMs = new Date(tYear, tMonth - 1, tDay, 23, 59, 59, 999).getTime();
+        if (!isNaN(toMs)) {
+          list = list.filter((e) => new Date(e.createdDate).getTime() <= toMs);
         }
       }
     }

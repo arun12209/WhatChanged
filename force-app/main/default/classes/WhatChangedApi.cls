@@ -135,8 +135,14 @@ global with sharing class WhatChangedApi {
     private static DateTime parseDateTime(String isoStr) {
         if (String.isBlank(isoStr)) return null;
         try {
-            // ISO-8601 parsing e.g. 2026-08-17T12:00:00.000Z
-            String clean = isoStr.replace('Z', '').replace('T', ' ');
+            // ISO-8601 parsing e.g. 2026-08-17T12:00:00.000Z, 2026-08-17T12:00:00Z, or 2026-08-17
+            String clean = isoStr.trim().replace('Z', '').replace('T', ' ');
+            if (clean.contains('.')) {
+                clean = clean.substring(0, clean.indexOf('.'));
+            }
+            if (clean.length() == 10) {
+                clean += ' 00:00:00';
+            }
             return DateTime.valueOfGmt(clean);
         } catch (Exception e) {
             return null;

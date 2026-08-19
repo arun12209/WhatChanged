@@ -9,6 +9,7 @@ private class WhatChangedSecurityTest {
     static void testHasAccessWithBypass() {
         WhatChangedSecurity.setBypassForTests(true);
         System.assertEquals(true, WhatChangedSecurity.hasAccess(), 'Bypass should return true');
+        System.assertEquals(true, WhatChangedSecurity.canQueryLiveAuditTrail(), 'canQueryLiveAuditTrail with bypass should return true');
 
         // requireAccess should not throw when bypass is active
         try {
@@ -22,8 +23,6 @@ private class WhatChangedSecurityTest {
     @IsTest
     static void testRequireAccessThrowsWhenUnauthorized() {
         WhatChangedSecurity.setBypassForTests(false);
-        // Standard user or non-privileged context test
-        // In unit test context without assigned perm set, verify standard behavior
         Boolean canAccess = WhatChangedSecurity.hasAccess();
         if (!canAccess) {
             try {
@@ -32,6 +31,17 @@ private class WhatChangedSecurityTest {
             } catch (WhatChangedSecurity.WhatChangedSecurityException ex) {
                 System.assert(ex.getMessage().contains('permission'), 'Exception message should mention permission');
             }
+        } else {
+            // Context user already has admin/view setup permission
+            System.assertEquals(true, canAccess);
+            WhatChangedSecurity.requireAccess();
         }
+    }
+
+    @IsTest
+    static void testCanQueryLiveAuditTrailDirect() {
+        WhatChangedSecurity.setBypassForTests(false);
+        Boolean canQuery = WhatChangedSecurity.canQueryLiveAuditTrail();
+        System.assertNotEquals(null, canQuery);
     }
 }

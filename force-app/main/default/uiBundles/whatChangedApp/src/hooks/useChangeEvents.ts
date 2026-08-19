@@ -12,20 +12,28 @@ export function useChangeEvents(filters: TimelineFilters) {
 
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
+  const requestIdRef = useRef(0);
 
   const loadInitial = useCallback(async () => {
+    const currentReqId = ++requestIdRef.current;
     try {
       setIsLoading(true);
       setError(null);
 
       const res = await fetchEvents(filtersRef.current);
-      setEvents(res.events);
-      setChangeStories(res.changeStories || []);
-      setPageInfo(res.pageInfo);
+      if (currentReqId === requestIdRef.current) {
+        setEvents(res.events);
+        setChangeStories(res.changeStories || []);
+        setPageInfo(res.pageInfo);
+      }
     } catch (err: any) {
-      setError(err);
+      if (currentReqId === requestIdRef.current) {
+        setError(err);
+      }
     } finally {
-      setIsLoading(false);
+      if (currentReqId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
@@ -33,6 +41,8 @@ export function useChangeEvents(filters: TimelineFilters) {
     loadInitial();
   }, [
     filters.range,
+    filters.customFrom,
+    filters.customTo,
     filters.category,
     filters.severity,
     filters.actorId,

@@ -28,6 +28,7 @@ export const KNOWN_SALESFORCE_SECTIONS = [
 
 interface FilterBarProps {
   filters: TimelineFilters;
+  isLoading?: boolean;
   onRangeChange: (range: DateRangeOption) => void;
   onCustomDatesChange?: (from?: string, to?: string) => void;
   onCategoryChange: (category: ChangeCategory | 'ALL') => void;
@@ -42,6 +43,7 @@ interface FilterBarProps {
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
+  isLoading = false,
   onRangeChange,
   onCustomDatesChange,
   onCategoryChange,
@@ -215,9 +217,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               value={customFrom}
               onChange={(e) => {
                 setCustomFrom(e.target.value);
-                if (onCustomDatesChange) {
-                  onCustomDatesChange(e.target.value || undefined, customTo || undefined);
-                }
               }}
               className="bg-surface border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
@@ -230,9 +229,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               value={customTo}
               onChange={(e) => {
                 setCustomTo(e.target.value);
-                if (onCustomDatesChange) {
-                  onCustomDatesChange(customFrom || undefined, e.target.value || undefined);
-                }
               }}
               className="bg-surface border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
             />
@@ -240,7 +236,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
           {(customFrom || customTo) && (
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="secondary" onClick={handleCustomDateApply}>
+              <Button size="sm" variant="primary" onClick={handleCustomDateApply} isLoading={isLoading}>
                 Apply
               </Button>
               <button

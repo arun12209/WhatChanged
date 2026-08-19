@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   Layers,
   ArrowDown,
+  Loader2,
 } from 'lucide-react';
 import {
   ChangeEvent,
@@ -87,6 +88,9 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     return groups;
   }, [events]);
 
+  // Re-filter loading: filters changed while we already have events on screen
+  const isRefiltering = isLoading && events.length > 0;
+
   if (error && events.length === 0) {
     const isForbidden = (error as any).code === 'FORBIDDEN' || (error as any).statusCode === 403;
     return <ErrorState isForbidden={isForbidden} message={error.message} onRetry={onRefresh} />;
@@ -161,6 +165,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       {/* Filter Bar */}
       <FilterBar
         filters={filters}
+        isLoading={isLoading}
         onRangeChange={onRangeChange}
         onCustomDatesChange={onCustomDatesChange}
         onCategoryChange={onCategoryChange}
@@ -172,6 +177,16 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         onClearFilters={onClearFilters}
         hasActiveFilters={hasActiveFilters}
       />
+
+      {/* Inline Re-filter Loading Overlay */}
+      {isRefiltering && (
+        <div className="flex items-center justify-center gap-2.5 py-5 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 animate-in fade-in duration-200">
+          <Loader2 className="w-5 h-5 text-sky-500 animate-spin" />
+          <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+            Filtering changes…
+          </span>
+        </div>
+      )}
 
       {/* Loading Skeletons */}
       {isLoading && events.length === 0 ? (
@@ -196,7 +211,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
         />
       ) : (
         /* Render Stories and Events */
-        <div className="space-y-6">
+        <div className={`space-y-6 transition-opacity duration-200 ${isRefiltering ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
           {/* Change Stories Group */}
           {showStories && changeStories.length > 0 && (
             <div className="space-y-3">

@@ -110,7 +110,11 @@ public with sharing class WhatChangedAuditRepository {
         }
         try {
             CursorValue cv = new CursorValue();
-            cv.createdDate = DateTime.valueOfGmt(parts[0].replace('T', ' ').replace('Z', ''));
+            String datePart = parts[0].trim().replace('T', ' ').replace('Z', '');
+            if (datePart.contains('.')) {
+                datePart = datePart.substring(0, datePart.indexOf('.'));
+            }
+            cv.createdDate = DateTime.valueOfGmt(datePart);
             cv.recordId = parts[1];
             return (cv.createdDate != null && String.isNotBlank(cv.recordId)) ? cv : null;
         } catch (Exception e) {
