@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChangeSummary, ChangeEvent, AttentionItem, ChangeCategory, SeverityFilter } from '../../domain/types';
+import { ChangeSummary, ChangeEvent, AttentionItem, ChangeCategory, SeverityFilter, DateRangeOption } from '../../domain/types';
 import { Hero } from '../../components/shell/Hero';
 import { KpiCards } from './KpiCards';
 import { ActivityChart } from './ActivityChart';
@@ -19,6 +19,11 @@ interface OverviewViewProps {
   onRefresh: () => void;
   onEventClick: (event: ChangeEvent) => void;
   onNavigateTimeline: (filters?: { category?: ChangeCategory | 'ALL'; severity?: SeverityFilter }) => void;
+  range?: DateRangeOption;
+  customFrom?: string;
+  customTo?: string;
+  onRangeChange?: (range: DateRangeOption) => void;
+  onCustomDatesChange?: (from?: string, to?: string) => void;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -30,6 +35,11 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   onRefresh,
   onEventClick,
   onNavigateTimeline,
+  range = 'today',
+  customFrom = '',
+  customTo = '',
+  onRangeChange,
+  onCustomDatesChange,
 }) => {
   if (error && !summary) {
     const isForbidden = (error as any).code === 'FORBIDDEN' || (error as any).statusCode === 403;
@@ -39,7 +49,17 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   if (isLoading && !summary) {
     return (
       <div className="space-y-6">
-        <Hero secondsAgo={secondsAgo} isRefreshing={isRefreshing} onRefresh={onRefresh} />
+        <Hero
+          secondsAgo={secondsAgo}
+          isRefreshing={isRefreshing}
+          onRefresh={onRefresh}
+          range={range}
+          customFrom={customFrom}
+          customTo={customTo}
+          onRangeChange={onRangeChange}
+          onCustomDatesChange={onCustomDatesChange}
+          isLoading={isLoading}
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <KpiCardSkeleton />
           <KpiCardSkeleton />
@@ -79,41 +99,50 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         secondsAgo={secondsAgo}
         isRefreshing={isRefreshing}
         onRefresh={onRefresh}
+        range={range}
+        customFrom={customFrom}
+        customTo={customTo}
+        onRangeChange={onRangeChange}
+        onCustomDatesChange={onCustomDatesChange}
+        isLoading={isLoading}
       />
 
-      {/* 4 KPI Cards */}
-      <KpiCards
-        summary={summary}
-        onFilterClick={onNavigateTimeline}
-      />
+      <div className={`space-y-6 transition-opacity duration-200 ${isLoading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+        {/* 4 KPI Cards */}
+        <KpiCards
+          summary={summary}
+          range={range}
+          onFilterClick={onNavigateTimeline}
+        />
 
-      {/* Visual Activity & Attention Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ActivityChart data={summary.hourlyActivity} />
+        {/* Visual Activity & Attention Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <ActivityChart data={summary.hourlyActivity} />
+          </div>
+          <div className="lg:col-span-1">
+            <AttentionPanel
+              items={summary.attentionItems}
+              onItemClick={handleAttentionClick}
+            />
+          </div>
         </div>
-        <div className="lg:col-span-1">
-          <AttentionPanel
-            items={summary.attentionItems}
-            onItemClick={handleAttentionClick}
-          />
-        </div>
-      </div>
 
-      {/* Change Mix & Recent Changes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <ChangeMix
-            data={summary.categoryMix}
-            onCategoryClick={(cat) => onNavigateTimeline({ category: cat })}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <RecentChangesList
-            events={summary.recentChanges}
-            onEventClick={onEventClick}
-            onViewAllClick={() => onNavigateTimeline()}
-          />
+        {/* Change Mix & Recent Changes */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <ChangeMix
+              data={summary.categoryMix}
+              onCategoryClick={(cat) => onNavigateTimeline({ category: cat })}
+            />
+          </div>
+          <div className="lg:col-span-2">
+            <RecentChangesList
+              events={summary.recentChanges}
+              onEventClick={onEventClick}
+              onViewAllClick={() => onNavigateTimeline()}
+            />
+          </div>
         </div>
       </div>
     </div>

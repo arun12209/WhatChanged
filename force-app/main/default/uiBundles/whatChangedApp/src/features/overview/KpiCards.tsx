@@ -1,24 +1,42 @@
 import React from 'react';
 import { Activity, Cpu, Lock, ShieldAlert } from 'lucide-react';
-import { ChangeSummary, ChangeCategory, SeverityFilter } from '../../domain/types';
+import { ChangeSummary, ChangeCategory, SeverityFilter, DateRangeOption } from '../../domain/types';
 import { Card } from '../../components/common/Card';
 
 interface KpiCardsProps {
   summary: ChangeSummary;
+  range?: DateRangeOption;
   onFilterClick: (filter: { category?: ChangeCategory | 'ALL'; severity?: SeverityFilter }) => void;
 }
 
-export const KpiCards: React.FC<KpiCardsProps> = ({ summary, onFilterClick }) => {
+export const KpiCards: React.FC<KpiCardsProps> = ({ summary, range = 'today', onFilterClick }) => {
+  const getChangesTitle = () => {
+    switch (range) {
+      case 'today':
+        return 'Changes Today';
+      case '24h':
+        return 'Changes (24h)';
+      case '7d':
+        return 'Changes (7 Days)';
+      case '30d':
+        return 'Changes (30 Days)';
+      case 'custom':
+        return 'Changes in Period';
+      default:
+        return 'Changes Today';
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {/* 1. Total Changes Today */}
+      {/* 1. Total Changes */}
       <Card
         hoverable
         onClick={() => onFilterClick({ category: 'ALL', severity: 'ALL' })}
         className="p-5 cursor-pointer group"
       >
         <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider">Changes Today</span>
+          <span className="text-xs font-semibold uppercase tracking-wider">{getChangesTitle()}</span>
           <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Activity className="w-4 h-4" />
           </div>

@@ -86,4 +86,50 @@ describe('OverviewView Component', () => {
     expect(screen.getByText('Change Mix')).toBeInTheDocument();
     expect(screen.getByText('Org sharing model changed for Account')).toBeInTheDocument();
   });
+
+  it('renders dynamic title and handles date range changes in Overview', () => {
+    const handleRangeChange = vi.fn();
+    const { rerender } = render(
+      <OverviewView
+        summary={MOCK_SUMMARY}
+        isLoading={false}
+        isRefreshing={false}
+        error={null}
+        secondsAgo={15}
+        onRefresh={vi.fn()}
+        onEventClick={vi.fn()}
+        onNavigateTimeline={vi.fn()}
+        range="7d"
+        onRangeChange={handleRangeChange}
+      />
+    );
+
+    expect(screen.getByText('What changed in the last 7 days?')).toBeInTheDocument();
+    expect(screen.getByText('Changes (7 Days)')).toBeInTheDocument();
+
+    const last24hBtn = screen.getByRole('button', { name: 'Last 24h' });
+    fireEvent.click(last24hBtn);
+    expect(handleRangeChange).toHaveBeenCalledWith('24h');
+
+    // Test custom date range
+    rerender(
+      <OverviewView
+        summary={MOCK_SUMMARY}
+        isLoading={false}
+        isRefreshing={false}
+        error={null}
+        secondsAgo={15}
+        onRefresh={vi.fn()}
+        onEventClick={vi.fn()}
+        onNavigateTimeline={vi.fn()}
+        range="custom"
+        customFrom="2026-08-10"
+        customTo="2026-08-18"
+        onRangeChange={handleRangeChange}
+      />
+    );
+
+    expect(screen.getByText('What changed between 2026-08-10 → 2026-08-18?')).toBeInTheDocument();
+    expect(screen.getByText('Changes in Period')).toBeInTheDocument();
+  });
 });

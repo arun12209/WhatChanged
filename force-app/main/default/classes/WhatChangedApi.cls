@@ -30,7 +30,12 @@ global with sharing class WhatChangedApi {
             Map<String, String> params = req != null && req.params != null ? req.params : new Map<String, String>();
 
             if (path.endsWith('/summary')) {
-                WhatChangedDtos.ChangeSummaryDTO summary = WhatChangedAuditService.getChangeSummary();
+                DateTime fromDate = parseDateTime(params.get('from'));
+                DateTime toDate = parseDateTime(params.get('to'));
+                if (fromDate == null && params.containsKey('range')) {
+                    fromDate = System.now().addDays(-rangeToDays(params.get('range'), 0));
+                }
+                WhatChangedDtos.ChangeSummaryDTO summary = WhatChangedAuditService.getChangeSummary(fromDate, toDate);
                 res.statusCode = 200;
                 res.responseBody = Blob.valueOf(JSON.serialize(summary));
                 return;

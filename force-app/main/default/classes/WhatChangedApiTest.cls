@@ -34,6 +34,31 @@ private class WhatChangedApiTest {
     }
 
     @IsTest
+    static void testGetSummaryEndpointWithDateParams() {
+        WhatChangedSecurity.setBypassForTests(true);
+        WhatChangedAuditRepository.FakeAuditRepository fakeRepo = new WhatChangedAuditRepository.FakeAuditRepository();
+        WhatChangedAuditRepository.setMock(fakeRepo);
+
+        RestRequest req = new RestRequest();
+        RestResponse res = new RestResponse();
+        req.requestURI = '/services/apexrest/what-changed/v1/summary';
+        req.httpMethod = 'GET';
+        req.params.put('range', '7d');
+        req.params.put('from', '2026-08-10');
+        req.params.put('to', '2026-08-18');
+        RestContext.request = req;
+        RestContext.response = res;
+
+        Test.startTest();
+        WhatChangedApi.handleGet();
+        Test.stopTest();
+
+        System.assertEquals(200, res.statusCode);
+        String jsonStr = res.responseBody.toString();
+        System.assert(jsonStr.contains('totalChangesToday'));
+    }
+
+    @IsTest
     static void testGetEventsEndpoint() {
         WhatChangedSecurity.setBypassForTests(true);
         WhatChangedAuditRepository.FakeAuditRepository fakeRepo = new WhatChangedAuditRepository.FakeAuditRepository();

@@ -25,16 +25,7 @@ export const App: React.FC = () => {
   const { toggleTheme, isDark } = useTheme();
   const conn = getClientConnectionStatus();
 
-  // Summary Data Hook
-  const {
-    summary,
-    isLoading: isSummaryLoading,
-    isRefreshing,
-    error: summaryError,
-    refresh: refreshSummary,
-  } = useChangeSummary();
-
-  // Filters Hook
+  // Filters Hook (shared across views for unified date context)
   const {
     filters,
     setRange,
@@ -48,6 +39,15 @@ export const App: React.FC = () => {
     clearFilters,
     hasActiveFilters,
   } = useTimelineFilters();
+
+  // Summary Data Hook (reacts to date range changes)
+  const {
+    summary,
+    isLoading: isSummaryLoading,
+    isRefreshing,
+    error: summaryError,
+    refresh: refreshSummary,
+  } = useChangeSummary(filters.range, filters.customFrom, filters.customTo);
 
   // Change Events Hook
   const {
@@ -164,6 +164,11 @@ export const App: React.FC = () => {
             onRefresh={handleManualRefresh}
             onEventClick={setSelectedEvent}
             onNavigateTimeline={handleNavigateTimeline}
+            range={filters.range}
+            customFrom={filters.customFrom}
+            customTo={filters.customTo}
+            onRangeChange={setRange}
+            onCustomDatesChange={setCustomDates}
           />
         )}
 

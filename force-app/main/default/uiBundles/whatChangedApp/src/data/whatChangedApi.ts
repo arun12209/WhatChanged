@@ -4,6 +4,7 @@ import {
   Contributor,
   Insights,
   TimelineFilters,
+  DateRangeOption,
 } from '../domain/types';
 import { API_ENDPOINTS, DEFAULT_PAGE_SIZE } from '../domain/constants';
 import { sfdcFetch, isSalesforceEnvironment } from './salesforceClient';
@@ -51,15 +52,51 @@ async function handleResponse<T>(res: Response, label: string): Promise<T> {
 }
 
 /**
- * @description Fetches executive change summary and KPIs
+ * @description Fetches executive change summary and KPIs for the selected date range
  */
-export async function fetchSummary(): Promise<ChangeSummary> {
+export async function fetchSummary(
+  range: DateRangeOption = 'today',
+  customFrom?: string,
+  customTo?: string
+): Promise<ChangeSummary> {
   if (!isSalesforceEnvironment()) {
     await delay(120);
     return { ...MOCK_SUMMARY, lastRefreshedAt: new Date().toISOString() };
   }
 
-  const res = await sfdcFetch(API_ENDPOINTS.SUMMARY);
+  const queryParams = new URLSearchParams();
+  const now = new Date();
+  if (range === 'today') {
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    queryParams.append('from', todayStart.toISOString());
+  } else if (range === '24h') {
+    const past24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    queryParams.append('from', past24h.toISOString());
+  } else if (range === '7d') {
+    const past7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    queryParams.append('from', past7d.toISOString());
+  } else if (range === '30d') {
+    const past30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    queryParams.append('from', past30d.toISOString());
+  } else if (range === 'custom') {
+    if (customFrom) {
+      const [fYear, fMonth, fDay] = customFrom.split('-').map(Number);
+      const fromDate = new Date(fYear, fMonth - 1, fDay, 0, 0, 0, 0);
+      if (!isNaN(fromDate.getTime())) {
+        queryParams.append('from', fromDate.toISOString());
+      }
+    }
+    if (customTo) {
+      const [tYear, tMonth, tDay] = customTo.split('-').map(Number);
+      const toDate = new Date(tYear, tMonth - 1, tDay, 23, 59, 59, 999);
+      if (!isNaN(toDate.getTime())) {
+        queryParams.append('to', toDate.toISOString());
+      }
+    }
+  }
+
+  const url = `${API_ENDPOINTS.SUMMARY}?${queryParams.toString()}`;
+  const res = await sfdcFetch(url);
   return handleResponse<ChangeSummary>(res, 'Summary');
 }
 

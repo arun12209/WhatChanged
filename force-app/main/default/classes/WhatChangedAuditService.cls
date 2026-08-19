@@ -21,15 +21,22 @@ public with sharing class WhatChangedAuditService {
     };
 
     /**
-     * @description Retrieves the high-level operational summary and KPI metrics
+     * @description Overload for Apex callers defaulting to today
+     */
+    public static WhatChangedDtos.ChangeSummaryDTO getChangeSummary() {
+        return getChangeSummary(null, null);
+    }
+
+    /**
+     * @description Retrieves the high-level operational summary and KPI metrics for a specified date range
      */
     @AuraEnabled(cacheable=true)
-    public static WhatChangedDtos.ChangeSummaryDTO getChangeSummary() {
+    public static WhatChangedDtos.ChangeSummaryDTO getChangeSummary(DateTime fromDate, DateTime toDate) {
         WhatChangedSecurity.requireAccess();
 
         DateTime now = System.now();
-        DateTime todayStart = DateTime.newInstance(now.date(), Time.newInstance(0, 0, 0, 0));
-        DateTime todayEnd = DateTime.newInstance(now.date(), Time.newInstance(23, 59, 59, 999));
+        DateTime targetStart = fromDate != null ? fromDate : DateTime.newInstance(now.date(), Time.newInstance(0, 0, 0, 0));
+        DateTime targetEnd = toDate != null ? toDate : DateTime.newInstance(now.date(), Time.newInstance(23, 59, 59, 999));
 
         WhatChangedAuditRepository.IWhatChangedAuditRepository repo = WhatChangedAuditRepository.getInstance();
 
@@ -38,11 +45,11 @@ public with sharing class WhatChangedAuditService {
         summary.environmentType = identifyEnvironment();
 
         // 1. Exact totals from aggregates (not capped by a page-size sample)
-        summary.totalChangesToday = repo.countEvents(todayStart, todayEnd);
+        summary.totalChangesToday = repo.countEvents(targetStart, targetEnd);
 
-        Map<String, Integer> catCounts = scaleToTotal(repo.countByCategory(todayStart, todayEnd), summary.totalChangesToday);
-        Map<String, Integer> sevCounts = scaleToTotal(repo.countBySeverity(todayStart, todayEnd), summary.totalChangesToday);
-        Map<Integer, Integer> hourCounts = scaleHoursToTotal(repo.countByHour(todayStart, todayEnd), summary.totalChangesToday);
+        Map<String, Integer> catCounts = scaleToTotal(repo.countByCategory(targetStart, targetEnd), summary.totalChangesToday);
+        Map<String, Integer> sevCounts = scaleToTotal(repo.countBySeverity(targetStart, targetEnd), summary.totalChangesToday);
+        Map<Integer, Integer> hourCounts = scaleHoursToTotal(repo.countByHour(targetStart, targetEnd), summary.totalChangesToday);
 
         Integer automationCount = valueOr(catCounts, WhatChangedClassifier.CAT_AUTOMATION, 0);
         Integer accessCount = valueOr(catCounts, WhatChangedClassifier.CAT_ACCESS, 0) +
@@ -80,9 +87,9 @@ public with sharing class WhatChangedAuditService {
         // 5. Attention Items ("Worth a look") with configurable thresholds
         summary.attentionItems = buildAttentionItems(highInterestCount, accessCount, automationCount);
 
-        // 6. Recent changes (top 10)
+        // 6. Recent changes (top 10 in requested range)
         List<WhatChangedEventNormalizer.RawAuditInput> rawRecent = repo.queryEvents(
-            todayStart, todayEnd, null, null, null, null, null, 10, null
+            targetStart, targetEnd, null, null, null, null, null, 10, null
         );
         summary.recentChanges = WhatChangedEventNormalizer.normalizeList(rawRecent);
 

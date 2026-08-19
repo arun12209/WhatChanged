@@ -28,6 +28,22 @@ private class WhatChangedAuditServiceTest {
     }
 
     @IsTest
+    static void testGetChangeSummaryWithDateRange() {
+        WhatChangedSecurity.setBypassForTests(true);
+        WhatChangedAuditRepository.FakeAuditRepository fakeRepo = new WhatChangedAuditRepository.FakeAuditRepository();
+        WhatChangedAuditRepository.setMock(fakeRepo);
+
+        Test.startTest();
+        WhatChangedDtos.ChangeSummaryDTO summary = WhatChangedAuditService.getChangeSummary(
+            System.now().addDays(-7), System.now()
+        );
+        Test.stopTest();
+
+        System.assertNotEquals(null, summary);
+        System.assert(summary.totalChangesToday >= 0);
+    }
+
+    @IsTest
     static void testGetEventsWithFiltersAndPagination() {
         WhatChangedSecurity.setBypassForTests(true);
         WhatChangedAuditRepository.FakeAuditRepository fakeRepo = new WhatChangedAuditRepository.FakeAuditRepository();
