@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Match_Display_Contains__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Match Display Contains</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+    <externalId>false</externalId>
+    <description>Case-insensitive substring matched against SetupAuditTrail.Display. Blank = not evaluated.</description>
+</CustomField>

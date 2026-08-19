@@ -1,4 +1,4 @@
-import { TimelineFilters, ChangeCategory, ChangeSeverity, DateRangeOption } from '../domain/types';
+import { TimelineFilters, ChangeCategory, SeverityFilter, DateRangeOption } from '../domain/types';
 
 export function readFiltersFromUrl(): TimelineFilters {
   if (typeof window === 'undefined') {
@@ -8,7 +8,7 @@ export function readFiltersFromUrl(): TimelineFilters {
   const params = new URLSearchParams(window.location.search);
   const range = (params.get('range') as DateRangeOption) || 'today';
   const category = (params.get('category') as ChangeCategory | 'ALL') || 'ALL';
-  const severity = (params.get('severity') as ChangeSeverity | 'ALL') || 'ALL';
+  const severity = (params.get('severity') as SeverityFilter) || 'ALL';
   const customFrom = params.get('customFrom') || undefined;
   const customTo = params.get('customTo') || undefined;
   const actorId = params.get('actorId') || undefined;

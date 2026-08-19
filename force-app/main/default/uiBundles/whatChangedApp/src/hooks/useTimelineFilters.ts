@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TimelineFilters, ChangeCategory, ChangeSeverity, DateRangeOption } from '../domain/types';
+import { TimelineFilters, ChangeCategory, SeverityFilter, DateRangeOption } from '../domain/types';
 import { readFiltersFromUrl, writeFiltersToUrl } from '../utils/urlState';
 
 export function useTimelineFilters(initialOverrides?: Partial<TimelineFilters>) {
@@ -23,7 +23,7 @@ export function useTimelineFilters(initialOverrides?: Partial<TimelineFilters>) 
     setFilters((prev) => ({ ...prev, category }));
   }, []);
 
-  const setSeverity = useCallback((severity: ChangeSeverity | 'ALL') => {
+  const setSeverity = useCallback((severity: SeverityFilter) => {
     setFilters((prev) => ({ ...prev, severity }));
   }, []);
 

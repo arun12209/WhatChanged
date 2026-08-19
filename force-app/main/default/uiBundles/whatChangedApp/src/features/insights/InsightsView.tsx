@@ -4,6 +4,7 @@ import { Insights } from '../../domain/types';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { ErrorState } from '../../components/common/ErrorState';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
 
 interface InsightsViewProps {
   insights: Insights | null;
@@ -20,9 +21,9 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
 }) => {
   const [range, setRange] = useState('7d');
 
-  if (error) {
+  if (error && !insights) {
     const isForbidden = (error as any).code === 'FORBIDDEN' || (error as any).statusCode === 403;
-    return <ErrorState isForbidden={isForbidden} onRetry={() => onRefresh(range)} />;
+    return <ErrorState isForbidden={isForbidden} message={error.message} onRetry={() => onRefresh(range)} />;
   }
 
   if (!insights) return null;
@@ -38,6 +39,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
+      {error && <ErrorBanner message={error.message} onRetry={() => onRefresh(range)} />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
         <div>

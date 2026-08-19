@@ -18,6 +18,3 @@ node_modules/
 **/.DS_Store
 **/coverage/**
 
-# Multi-framework UI Bundle local development source
-**/uiBundles/**
-

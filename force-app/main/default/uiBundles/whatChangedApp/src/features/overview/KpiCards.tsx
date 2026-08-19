@@ -1,11 +1,11 @@
 import React from 'react';
 import { Activity, Cpu, Lock, ShieldAlert } from 'lucide-react';
-import { ChangeSummary, ChangeCategory, ChangeSeverity } from '../../domain/types';
+import { ChangeSummary, ChangeCategory, SeverityFilter } from '../../domain/types';
 import { Card } from '../../components/common/Card';
 
 interface KpiCardsProps {
   summary: ChangeSummary;
-  onFilterClick: (filter: { category?: ChangeCategory | 'ALL'; severity?: ChangeSeverity | 'ALL' }) => void;
+  onFilterClick: (filter: { category?: ChangeCategory | 'ALL'; severity?: SeverityFilter }) => void;
 }
 
 export const KpiCards: React.FC<KpiCardsProps> = ({ summary, onFilterClick }) => {
@@ -71,10 +71,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ summary, onFilterClick }) =>
         </div>
       </Card>
 
-      {/* 4. High Interest / Review Recommended */}
+      {/* 4. High Interest / Review Recommended (HIGH + CRITICAL) */}
       <Card
         hoverable
-        onClick={() => onFilterClick({ severity: 'HIGH' })}
+        onClick={() => onFilterClick({ severity: 'ELEVATED' })}
         className="p-5 cursor-pointer group"
       >
         <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">

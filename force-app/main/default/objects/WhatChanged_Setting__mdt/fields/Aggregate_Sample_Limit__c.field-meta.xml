@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Aggregate_Sample_Limit__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Aggregate Sample Limit</label>
+    <precision>5</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <type>Number</type>
+    <unique>false</unique>
+    <externalId>false</externalId>
+    <description>How many of the most recent rows in range are sampled for category/severity/hour/section/people distributions (SetupAuditTrail cannot GROUP BY). 200-5000, default 2000.</description>
+</CustomField>

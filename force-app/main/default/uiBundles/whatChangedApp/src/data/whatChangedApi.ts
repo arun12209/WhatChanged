@@ -198,7 +198,11 @@ function filterMockEvents(
   }
 
   if (filters.severity && filters.severity !== 'ALL') {
-    list = list.filter((e) => e.severity === filters.severity);
+    if (filters.severity === 'ELEVATED') {
+      list = list.filter((e) => e.severity === 'HIGH' || e.severity === 'CRITICAL');
+    } else {
+      list = list.filter((e) => e.severity === filters.severity);
+    }
   }
 
   if (filters.actorId) {

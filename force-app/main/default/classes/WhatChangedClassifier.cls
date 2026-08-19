@@ -1,6 +1,13 @@
 /**
  * @description Extensible deterministic classification engine for Salesforce Setup Audit Trail events.
  * Maps Action, Section, Display, and Namespace to Category and Severity.
+ *
+ * Classification is pluggable:
+ *  1. WhatChanged_Setting__mdt.Classifier_Strategy_Class__c may name any Apex class
+ *     implementing IClassificationStrategy (resolved via Type.forName).
+ *  2. The default strategy first evaluates admin-configurable WhatChanged_Classification_Rule__mdt
+ *     records (ordered by Sort_Order__c); the first matching active rule wins.
+ *  3. If no rule matches, the built-in keyword engine below is used.
  * @group WhatChanged
  */
 public with sharing class WhatChangedClassifier {
@@ -23,6 +30,14 @@ public with sharing class WhatChangedClassifier {
     public static final String SEV_HIGH = 'HIGH';
     public static final String SEV_CRITICAL = 'CRITICAL';
 
+    private static final Set<String> VALID_CATEGORIES = new Set<String>{
+        CAT_DEPLOYMENT, CAT_AUTOMATION, CAT_ACCESS, CAT_SECURITY, CAT_DATA_MODEL,
+        CAT_CODE, CAT_UI, CAT_INTEGRATION, CAT_USER_ADMIN, CAT_CONFIGURATION, CAT_OTHER
+    };
+    private static final Set<String> VALID_SEVERITIES = new Set<String>{
+        SEV_INFO, SEV_LOW, SEV_MEDIUM, SEV_HIGH, SEV_CRITICAL
+    };
+
     public class ClassificationResult {
         public String category;
         public String severity;
@@ -34,18 +49,156 @@ public with sharing class WhatChangedClassifier {
     }
 
     /**
+     * @description Contract for pluggable classification strategies.
+     */
+    public interface IClassificationStrategy {
+        ClassificationResult classify(String action, String section, String display, String namespace);
+    }
+
+    private static IClassificationStrategy strategyInstance;
+
+    @TestVisible
+    private static void setStrategyForTests(IClassificationStrategy strategy) {
+        strategyInstance = strategy;
+    }
+
+    private static IClassificationStrategy getStrategy() {
+        if (strategyInstance != null) {
+            return strategyInstance;
+        }
+        String className = WhatChangedSettings.getClassifierStrategyClass();
+        if (String.isNotBlank(className)) {
+            try {
+                Type t = Type.forName(className);
+                if (t != null) {
+                    Object candidate = t.newInstance();
+                    if (candidate instanceof IClassificationStrategy) {
+                        strategyInstance = (IClassificationStrategy) candidate;
+                        return strategyInstance;
+                    }
+                }
+                System.debug(LoggingLevel.WARN,
+                    'WhatChanged: configured classifier strategy "' + className + '" not found or does not implement IClassificationStrategy; using default.');
+            } catch (Exception ex) {
+                System.debug(LoggingLevel.WARN,
+                    'WhatChanged: failed to instantiate classifier strategy "' + className + '": ' + ex.getMessage());
+            }
+        }
+        strategyInstance = new DefaultClassificationStrategy();
+        return strategyInstance;
+    }
+
+    /**
      * @description Classifies a Setup Audit Trail record into Category and Severity
      */
     public static ClassificationResult classify(String action, String section, String display, String namespace) {
-        String act = action != null ? action.toLowerCase() : '';
-        String sec = section != null ? section.toLowerCase() : '';
-        String disp = display != null ? display.toLowerCase() : '';
-
-        String category = determineCategory(act, sec, disp, namespace);
-        String severity = determineSeverity(category, act, sec, disp);
-
-        return new ClassificationResult(category, severity);
+        return getStrategy().classify(action, section, display, namespace);
     }
+
+    // ==================================================================================
+    // Custom-metadata rule support
+    // ==================================================================================
+
+    @TestVisible
+    private static List<WhatChanged_Classification_Rule__mdt> rulesForTests;
+
+    private static List<WhatChanged_Classification_Rule__mdt> cachedRules;
+
+    /**
+     * @description Active classification rules, ordered by Sort_Order__c ascending.
+     */
+    public static List<WhatChanged_Classification_Rule__mdt> getActiveRules() {
+        if (rulesForTests != null) {
+            return rulesForTests;
+        }
+        if (cachedRules == null) {
+            cachedRules = [
+                SELECT DeveloperName, Sort_Order__c, Is_Active__c,
+                       Match_Action_Contains__c, Match_Section_Contains__c, Match_Display_Contains__c,
+                       Category__c, Severity__c
+                FROM WhatChanged_Classification_Rule__mdt
+                WHERE Is_Active__c = true
+                ORDER BY Sort_Order__c ASC NULLS LAST
+                LIMIT 500
+            ];
+        }
+        return cachedRules;
+    }
+
+    /**
+     * @description Default strategy: CMDT rules first, then the built-in keyword engine.
+     */
+    public class DefaultClassificationStrategy implements IClassificationStrategy {
+
+        public ClassificationResult classify(String action, String section, String display, String namespace) {
+            String act = action != null ? action.toLowerCase() : '';
+            String sec = section != null ? section.toLowerCase() : '';
+            String disp = display != null ? display.toLowerCase() : '';
+
+            // 1. Admin-configured rules (first active match by sort order wins)
+            for (WhatChanged_Classification_Rule__mdt rule : getActiveRules()) {
+                if (ruleMatches(rule, act, sec, disp)) {
+                    String cat = normalizeCategory(rule.Category__c);
+                    String sev = normalizeSeverity(rule.Severity__c);
+                    if (cat == null) {
+                        cat = determineCategory(act, sec, disp, namespace);
+                    }
+                    if (sev == null) {
+                        sev = determineSeverity(cat, act, sec, disp);
+                    }
+                    return new ClassificationResult(cat, sev);
+                }
+            }
+
+            // 2. Built-in keyword engine
+            String category = determineCategory(act, sec, disp, namespace);
+            String severity = determineSeverity(category, act, sec, disp);
+            return new ClassificationResult(category, severity);
+        }
+
+        private Boolean ruleMatches(WhatChanged_Classification_Rule__mdt rule, String act, String sec, String disp) {
+            Boolean hasCriteria = false;
+            if (String.isNotBlank(rule.Match_Action_Contains__c)) {
+                hasCriteria = true;
+                if (!act.contains(rule.Match_Action_Contains__c.toLowerCase().trim())) {
+                    return false;
+                }
+            }
+            if (String.isNotBlank(rule.Match_Section_Contains__c)) {
+                hasCriteria = true;
+                if (!sec.contains(rule.Match_Section_Contains__c.toLowerCase().trim())) {
+                    return false;
+                }
+            }
+            if (String.isNotBlank(rule.Match_Display_Contains__c)) {
+                hasCriteria = true;
+                if (!disp.contains(rule.Match_Display_Contains__c.toLowerCase().trim())) {
+                    return false;
+                }
+            }
+            return hasCriteria;
+        }
+
+        private String normalizeCategory(String raw) {
+            if (String.isBlank(raw)) {
+                return null;
+            }
+            String cat = raw.trim().toUpperCase();
+            return VALID_CATEGORIES.contains(cat) ? cat : null;
+        }
+
+        private String normalizeSeverity(String raw) {
+            if (String.isBlank(raw)) {
+                return null;
+            }
+            String sev = raw.trim().toUpperCase();
+            return VALID_SEVERITIES.contains(sev) ? sev : null;
+        }
+    }
+
+    // ==================================================================================
+    // Built-in keyword engine (default fallback)
+    // ==================================================================================
 
     private static String determineCategory(String act, String sec, String disp, String namespace) {
         // 1. DEPLOYMENT & PACKAGING

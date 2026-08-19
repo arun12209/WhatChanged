@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChangeSummary, ChangeEvent, AttentionItem, ChangeCategory, ChangeSeverity } from '../../domain/types';
+import { ChangeSummary, ChangeEvent, AttentionItem, ChangeCategory, SeverityFilter } from '../../domain/types';
 import { Hero } from '../../components/shell/Hero';
 import { KpiCards } from './KpiCards';
 import { ActivityChart } from './ActivityChart';
@@ -8,6 +8,7 @@ import { AttentionPanel } from './AttentionPanel';
 import { RecentChangesList } from './RecentChangesList';
 import { KpiCardSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
 
 interface OverviewViewProps {
   summary: ChangeSummary | null;
@@ -17,7 +18,7 @@ interface OverviewViewProps {
   secondsAgo: number;
   onRefresh: () => void;
   onEventClick: (event: ChangeEvent) => void;
-  onNavigateTimeline: (filters?: { category?: ChangeCategory | 'ALL'; severity?: ChangeSeverity | 'ALL' }) => void;
+  onNavigateTimeline: (filters?: { category?: ChangeCategory | 'ALL'; severity?: SeverityFilter }) => void;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -30,9 +31,9 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   onEventClick,
   onNavigateTimeline,
 }) => {
-  if (error) {
+  if (error && !summary) {
     const isForbidden = (error as any).code === 'FORBIDDEN' || (error as any).statusCode === 403;
-    return <ErrorState isForbidden={isForbidden} onRetry={onRefresh} />;
+    return <ErrorState isForbidden={isForbidden} message={error.message} onRetry={onRefresh} />;
   }
 
   if (isLoading && !summary) {
@@ -53,7 +54,9 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
   const handleAttentionClick = (item: AttentionItem) => {
     if (item.filterParam) {
-      if (item.filterParam.includes('severity=CRITICAL')) {
+      if (item.filterParam.includes('severity=ELEVATED')) {
+        onNavigateTimeline({ severity: 'ELEVATED' });
+      } else if (item.filterParam.includes('severity=CRITICAL')) {
         onNavigateTimeline({ severity: 'CRITICAL' });
       } else if (item.filterParam.includes('severity=HIGH')) {
         onNavigateTimeline({ severity: 'HIGH' });
@@ -71,6 +74,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
+      {error && <ErrorBanner message={error.message} onRetry={onRefresh} />}
       <Hero
         secondsAgo={secondsAgo}
         isRefreshing={isRefreshing}

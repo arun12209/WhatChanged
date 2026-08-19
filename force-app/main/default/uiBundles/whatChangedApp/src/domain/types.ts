@@ -149,12 +149,18 @@ export interface ChangeEventsResponse {
 
 export type DateRangeOption = 'today' | '24h' | '7d' | '30d' | 'custom';
 
+/**
+ * Severity filter value. 'ELEVATED' is a server-supported alias for HIGH + CRITICAL
+ * (used by the "Worth a Look" KPI and attention items).
+ */
+export type SeverityFilter = ChangeSeverity | 'ALL' | 'ELEVATED';
+
 export interface TimelineFilters {
   range: DateRangeOption;
   customFrom?: string;
   customTo?: string;
   category?: ChangeCategory | 'ALL';
-  severity?: ChangeSeverity | 'ALL';
+  severity?: SeverityFilter;
   actorId?: string;
   actorName?: string;
   section?: string;

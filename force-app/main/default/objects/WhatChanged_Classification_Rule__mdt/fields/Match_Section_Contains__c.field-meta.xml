@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Match_Section_Contains__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Match Section Contains</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+    <externalId>false</externalId>
+    <description>Case-insensitive substring matched against SetupAuditTrail.Section. Blank = not evaluated.</description>
+</CustomField>

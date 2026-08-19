@@ -14,7 +14,25 @@
         <members>WhatChangedEventNormalizerTest</members>
         <members>WhatChangedSecurity</members>
         <members>WhatChangedSecurityTest</members>
+        <members>WhatChangedSettings</members>
+        <members>WhatChangedSettingsTest</members>
+        <members>WhatChangedRuleEngineTest</members>
+        <members>WhatChangedLiveSoqlSmokeTest</members>
+        <members>WhatChangedServicePagingTest</members>
         <name>ApexClass</name>
+    </types>
+
+    <!-- Custom Metadata Types for configurable classification and settings -->
+    <types>
+        <members>WhatChanged_Classification_Rule__mdt</members>
+        <members>WhatChanged_Setting__mdt</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>WhatChanged_Setting.Default</members>
+        <members>WhatChanged_Classification_Rule.Example_Data_Export_Critical</members>
+        <members>WhatChanged_Classification_Rule.Example_CI_Bot_Deployments_Info</members>
+        <name>CustomMetadata</name>
     </types>
 
     <!-- Custom Permission for Access Control -->

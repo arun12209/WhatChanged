@@ -9,7 +9,7 @@ import {
   PageInfo,
   TimelineFilters,
   ChangeCategory,
-  ChangeSeverity,
+  SeverityFilter,
   DateRangeOption,
 } from '../../domain/types';
 import { formatDateHeader } from '../../utils/date';
@@ -21,6 +21,7 @@ import { Button } from '../../components/common/Button';
 import { EmptyState } from '../../components/common/EmptyState';
 import { TimelineRowSkeleton } from '../../components/common/Skeleton';
 import { ErrorState } from '../../components/common/ErrorState';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
 
 interface TimelineViewProps {
   events: ChangeEvent[];
@@ -33,7 +34,7 @@ interface TimelineViewProps {
   onRangeChange: (range: DateRangeOption) => void;
   onCustomDatesChange?: (from?: string, to?: string) => void;
   onCategoryChange: (category: ChangeCategory | 'ALL') => void;
-  onSeverityChange: (severity: ChangeSeverity | 'ALL') => void;
+  onSeverityChange: (severity: SeverityFilter) => void;
   onSectionChange?: (section?: string) => void;
   onSearchChange: (search: string) => void;
   onActorChange?: (actorId?: string, actorName?: string) => void;
@@ -86,13 +87,14 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     return groups;
   }, [events]);
 
-  if (error) {
+  if (error && events.length === 0) {
     const isForbidden = (error as any).code === 'FORBIDDEN' || (error as any).statusCode === 403;
-    return <ErrorState isForbidden={isForbidden} onRetry={onRefresh} />;
+    return <ErrorState isForbidden={isForbidden} message={error.message} onRetry={onRefresh} />;
   }
 
   return (
     <div className="space-y-4 animate-in fade-in duration-150">
+      {error && <ErrorBanner message={error.message} onRetry={onRefresh} />}
       {/* Header bar with count & density toggles */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Classifier_Strategy_Class__c</fullName>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Classifier Strategy Class</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+    <externalId>false</externalId>
+    <description>Apex class implementing WhatChangedClassifier.IClassificationStrategy. Blank = default rule-engine strategy.</description>
+</CustomField>

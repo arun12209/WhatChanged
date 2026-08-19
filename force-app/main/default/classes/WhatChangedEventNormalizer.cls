@@ -15,6 +15,10 @@ public with sharing class WhatChangedEventNormalizer {
         public String actorName;
         public String delegateUser;
         public String responsibleNamespace;
+        // Optional pre-computed classification (kept for pluggable future sources)
+        public String storedCategory;
+        public String storedSeverity;
+        public String storedTitle;
 
         public RawAuditInput() {}
 
@@ -62,15 +66,22 @@ public with sharing class WhatChangedEventNormalizer {
         dto.rawDisplay = raw.display != null ? raw.display : '';
         dto.responsibleNamespace = raw.responsibleNamespace;
 
-        // Classify Category & Severity
-        WhatChangedClassifier.ClassificationResult cr = WhatChangedClassifier.classify(
-            dto.action, dto.section, dto.rawDisplay, dto.responsibleNamespace
-        );
-        dto.category = cr.category;
-        dto.severity = cr.severity;
+        // Classify Category & Severity (reuse persisted classification for ingested rows)
+        if (String.isNotBlank(raw.storedCategory) && String.isNotBlank(raw.storedSeverity)) {
+            dto.category = raw.storedCategory;
+            dto.severity = raw.storedSeverity;
+        } else {
+            WhatChangedClassifier.ClassificationResult cr = WhatChangedClassifier.classify(
+                dto.action, dto.section, dto.rawDisplay, dto.responsibleNamespace
+            );
+            dto.category = cr.category;
+            dto.severity = cr.severity;
+        }
 
         // Human-friendly title and narrative
-        dto.title = deriveTitle(dto.action, dto.section, dto.rawDisplay, dto.category);
+        dto.title = String.isNotBlank(raw.storedTitle)
+            ? raw.storedTitle
+            : deriveTitle(dto.action, dto.section, dto.rawDisplay, dto.category);
         dto.description = deriveDescription(dto.rawDisplay, dto.title, dto.actor.name);
 
         // Component metadata extraction

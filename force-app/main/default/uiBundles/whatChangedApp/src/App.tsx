@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { ViewTab, ChangeEvent, ChangeCategory, ChangeSeverity, Contributor } from './domain/types';
+import { ViewTab, ChangeEvent, ChangeCategory, SeverityFilter, Contributor } from './domain/types';
 import { useTheme } from './hooks/useTheme';
 import { useAutoRefresh } from './hooks/useAutoRefresh';
 import { useChangeSummary } from './hooks/useChangeSummary';
@@ -80,15 +80,26 @@ export const App: React.FC = () => {
   // Command Palette Hook
   const { isOpen: isCmdOpen, open: openCmd, close: closeCmd } = useCommandPalette();
 
-  // Master Refresh
+  // Refresh only the data behind the visible tab — avoids 4 API calls per minute
+  // per user and keeps transient failures scoped to the active view.
   const handleMasterRefresh = useCallback(async () => {
-    await Promise.all([
-      refreshSummary(),
-      refreshEvents(),
-      refreshPeople(),
-      refreshInsights(filters.range === '30d' ? '30d' : '7d'),
-    ]);
-  }, [refreshSummary, refreshEvents, refreshPeople, refreshInsights, filters.range]);
+    switch (currentTab) {
+      case 'overview':
+        await refreshSummary();
+        break;
+      case 'timeline':
+        await refreshEvents();
+        break;
+      case 'people':
+        await refreshPeople();
+        break;
+      case 'insights':
+        await refreshInsights(filters.range === '30d' ? '30d' : '7d');
+        break;
+      default:
+        break;
+    }
+  }, [currentTab, refreshSummary, refreshEvents, refreshPeople, refreshInsights, filters.range]);
 
   // Auto-refresh hook (polls every 60s while tab active)
   const { secondsAgo, markRefreshed } = useAutoRefresh(handleMasterRefresh, 60000);
@@ -100,7 +111,7 @@ export const App: React.FC = () => {
 
   const handleNavigateTimeline = (overrideFilters?: {
     category?: ChangeCategory | 'ALL';
-    severity?: ChangeSeverity | 'ALL';
+    severity?: SeverityFilter;
   }) => {
     setActor(undefined, undefined);
     setSearch('');
@@ -130,6 +141,16 @@ export const App: React.FC = () => {
         onToggleTheme={toggleTheme}
         onOpenCommandPalette={openCmd}
       />
+
+      {/* Demo-mode warning: never let sample data pass as live org data */}
+      {!conn.isLive && (
+        <div
+          role="alert"
+          className="bg-amber-100 dark:bg-amber-950/60 border-b border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs text-center py-1.5 font-semibold"
+        >
+          Demo mode — not connected to Salesforce. Displaying sample data only.
+        </div>
+      )}
 
       {/* Main Canvas Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

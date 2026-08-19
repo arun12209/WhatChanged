@@ -7,7 +7,7 @@ import {
   Calendar,
   Layers,
 } from 'lucide-react';
-import { TimelineFilters, ChangeCategory, ChangeSeverity, DateRangeOption } from '../../domain/types';
+import { TimelineFilters, ChangeCategory, SeverityFilter, DateRangeOption } from '../../domain/types';
 import { ALL_CATEGORIES, getCategoryMeta } from '../../domain/categories';
 import { ALL_SEVERITIES } from '../../domain/severity';
 import { Button } from '../../components/common/Button';
@@ -31,7 +31,7 @@ interface FilterBarProps {
   onRangeChange: (range: DateRangeOption) => void;
   onCustomDatesChange?: (from?: string, to?: string) => void;
   onCategoryChange: (category: ChangeCategory | 'ALL') => void;
-  onSeverityChange: (severity: ChangeSeverity | 'ALL') => void;
+  onSeverityChange: (severity: SeverityFilter) => void;
   onSectionChange?: (section?: string) => void;
   onSearchChange: (search: string) => void;
   onActorChange?: (actorId?: string, actorName?: string) => void;
@@ -107,10 +107,16 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {searchInput && (
             <button
               onClick={() => setSearchInput('')}
+              aria-label="Clear search"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          )}
+          {filters.search && (
+            <p className="absolute -bottom-4 left-0 text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+              Searching within the selected date range ({filters.range === 'today' ? 'Today' : filters.range})
+            </p>
           )}
         </div>
 
@@ -156,10 +162,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {/* Severity Dropdown */}
           <select
             value={filters.severity || 'ALL'}
-            onChange={(e) => onSeverityChange(e.target.value as ChangeSeverity | 'ALL')}
+            onChange={(e) => onSeverityChange(e.target.value as SeverityFilter)}
+            aria-label="Filter by severity"
             className="text-xs bg-surface border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-lg px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs"
           >
             <option value="ALL">All Severities</option>
+            <option value="ELEVATED">HIGH + CRITICAL</option>
             {ALL_SEVERITIES.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -295,10 +303,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <span>
                 {filters.customFrom || 'Start'} → {filters.customTo || 'Now'}
               </span>
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-sky-900 dark:hover:text-sky-100"
+              <button
+                type="button"
+                aria-label="Remove custom date range filter"
                 onClick={() => onCustomDatesChange?.(undefined, undefined)}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-sky-900 dark:hover:text-sky-100" />
+              </button>
             </span>
           )}
 
@@ -306,10 +318,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {filters.category && filters.category !== 'ALL' && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
               Category: {getCategoryMeta(filters.category).label}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+              <button
+                type="button"
+                aria-label="Remove category filter"
                 onClick={() => onCategoryChange('ALL')}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-slate-100" />
+              </button>
             </span>
           )}
 
@@ -318,10 +334,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
               <Layers className="w-3 h-3 text-slate-500" />
               Section: {filters.section}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+              <button
+                type="button"
+                aria-label="Remove section filter"
                 onClick={() => onSectionChange?.(undefined)}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-slate-100" />
+              </button>
             </span>
           )}
 
@@ -329,10 +349,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {filters.severity && filters.severity !== 'ALL' && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
               Severity: {filters.severity}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+              <button
+                type="button"
+                aria-label="Remove severity filter"
                 onClick={() => onSeverityChange('ALL')}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-slate-100" />
+              </button>
             </span>
           )}
 
@@ -340,10 +364,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {filters.actorName && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
               Actor: {filters.actorName}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+              <button
+                type="button"
+                aria-label="Remove actor filter"
                 onClick={() => onActorChange?.(undefined, undefined)}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-slate-100" />
+              </button>
             </span>
           )}
 
@@ -351,10 +379,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           {filters.search && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
               Query: "{filters.search}"
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+              <button
+                type="button"
+                aria-label="Remove search filter"
                 onClick={() => onSearchChange('')}
-              />
+                className="inline-flex items-center"
+              >
+                <X className="w-3 h-3 hover:text-slate-900 dark:hover:text-slate-100" />
+              </button>
             </span>
           )}
         </div>

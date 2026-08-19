@@ -10,6 +10,7 @@ public with sharing class WhatChangedSecurity {
     public class WhatChangedSecurityException extends Exception {}
 
     private static Boolean bypassSecurityForTests = false;
+    private static Boolean cachedViewSetup;
 
     @TestVisible
     public static void setBypassForTests(Boolean bypass) {
@@ -17,42 +18,55 @@ public with sharing class WhatChangedSecurity {
     }
 
     /**
-     * @description Checks if the current context user has authorization to view Setup Change History
+     * @description Checks if the current context user has authorization to view Setup Change History.
+     * Grants access via the WhatChanged_Access custom permission OR effective (profile- or
+     * permission-set-granted) View Setup / Modify All Data permissions.
      */
     public static Boolean hasAccess() {
         if (bypassSecurityForTests) {
             return true;
         }
 
-        // 1. Check Custom Permission assignment
+        // 1. Custom Permission assignment (assigned via WhatChanged_User permission set)
         try {
-            Boolean hasCustomPerm = FeatureManagement.checkPermission(CUSTOM_PERMISSION_NAME);
-            if (hasCustomPerm) {
+            if (FeatureManagement.checkPermission(CUSTOM_PERMISSION_NAME)) {
                 return true;
             }
         } catch (Exception ex) {
-            // In case custom permission is not yet deployed, fallback to standard profile checks
+            // Custom permission not deployed yet — fall back to standard permission checks
         }
 
-        // 2. Check standard permissions (e.g. ViewSetup)
+        return canQueryLiveAuditTrail();
+    }
+
+    /**
+     * @description True when the running user can query SetupAuditTrail directly
+     * (requires effective View Setup and Configuration or Modify All Data).
+     * Uses UserPermissionAccess so permission-set-granted permissions are honored,
+     * not just profile-level ones.
+     */
+    public static Boolean canQueryLiveAuditTrail() {
+        if (bypassSecurityForTests) {
+            return true;
+        }
+        if (cachedViewSetup != null) {
+            return cachedViewSetup;
+        }
+        cachedViewSetup = false;
         try {
-            List<User> runningUsers = [
-                SELECT Id, Profile.PermissionsViewSetup, Profile.PermissionsModifyAllData
-                FROM User
-                WHERE Id = :UserInfo.getUserId()
+            List<UserPermissionAccess> access = [
+                SELECT PermissionsViewSetup, PermissionsModifyAllData
+                FROM UserPermissionAccess
                 LIMIT 1
             ];
-            if (!runningUsers.isEmpty()) {
-                User u = runningUsers[0];
-                if (u.Profile.PermissionsViewSetup || u.Profile.PermissionsModifyAllData) {
-                    return true;
-                }
+            if (!access.isEmpty()) {
+                cachedViewSetup = (access[0].PermissionsViewSetup == true) ||
+                                  (access[0].PermissionsModifyAllData == true);
             }
         } catch (Exception ex) {
-            // Catch any unexpected query failure
+            cachedViewSetup = false;
         }
-
-        return false;
+        return cachedViewSetup;
     }
 
     /**

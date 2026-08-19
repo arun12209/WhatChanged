@@ -2,8 +2,11 @@
  * @description Apex REST resource exposing WhatChanged Change Intelligence endpoints:
  * GET /services/apexrest/what-changed/v1/summary
  * GET /services/apexrest/what-changed/v1/events
- * GET /services/apexrest/what-changed/v1/people
- * GET /services/apexrest/what-changed/v1/insights
+ * GET /services/apexrest/what-changed/v1/people   (accepts from/to or range=24h|7d|30d)
+ * GET /services/apexrest/what-changed/v1/insights (accepts range=24h|7d|30d)
+ *
+ * Error contract: failures return { error: { code, message } } where message includes a
+ * correlation id that is also written to the Apex debug log with the full stack trace.
  * @group WhatChanged
  */
 @RestResource(urlMapping='/what-changed/v1/*')
@@ -57,8 +60,12 @@ global with sharing class WhatChangedApi {
             if (path.endsWith('/people')) {
                 DateTime fromDate = parseDateTime(params.get('from'));
                 DateTime toDate = parseDateTime(params.get('to'));
-                if (fromDate == null) fromDate = System.now().addDays(-7);
-                if (toDate == null) toDate = System.now();
+                if (fromDate == null) {
+                    fromDate = System.now().addDays(-rangeToDays(params.get('range'), 7));
+                }
+                if (toDate == null) {
+                    toDate = System.now();
+                }
 
                 List<WhatChangedDtos.ContributorDTO> contributors = WhatChangedAuditService.getContributors(fromDate, toDate);
                 res.statusCode = 200;
@@ -76,24 +83,53 @@ global with sharing class WhatChangedApi {
 
             // Unknown route
             res.statusCode = 404;
-            WhatChangedDtos.ErrorResponseDTO err = new WhatChangedDtos.ErrorResponseDTO(
+            res.responseBody = Blob.valueOf(JSON.serialize(new WhatChangedDtos.ErrorResponseDTO(
                 'NOT_FOUND', 'Unknown WhatChanged endpoint requested: ' + path
-            );
-            res.responseBody = Blob.valueOf(JSON.serialize(err));
+            )));
 
         } catch (WhatChangedSecurity.WhatChangedSecurityException secEx) {
             res.statusCode = 403;
-            WhatChangedDtos.ErrorResponseDTO err = new WhatChangedDtos.ErrorResponseDTO(
+            res.responseBody = Blob.valueOf(JSON.serialize(new WhatChangedDtos.ErrorResponseDTO(
                 'FORBIDDEN', secEx.getMessage()
-            );
-            res.responseBody = Blob.valueOf(JSON.serialize(err));
-        } catch (Exception ex) {
+            )));
+        } catch (QueryException qEx) {
+            String errorId = newErrorId();
+            logError(errorId, qEx);
             res.statusCode = 500;
-            WhatChangedDtos.ErrorResponseDTO err = new WhatChangedDtos.ErrorResponseDTO(
-                'INTERNAL_ERROR', 'An unexpected error occurred while processing change intelligence request.'
-            );
-            res.responseBody = Blob.valueOf(JSON.serialize(err));
+            String permissionHint = qEx.getMessage() != null && qEx.getMessage().containsIgnoreCase('sObject type')
+                ? ' You may be missing the "View Setup and Configuration" permission.'
+                : '';
+            res.responseBody = Blob.valueOf(JSON.serialize(new WhatChangedDtos.ErrorResponseDTO(
+                'QUERY_ERROR',
+                'Change history query failed: ' + qEx.getMessage() + permissionHint + ' (error id: ' + errorId + ')'
+            )));
+        } catch (Exception ex) {
+            String errorId = newErrorId();
+            logError(errorId, ex);
+            res.statusCode = 500;
+            res.responseBody = Blob.valueOf(JSON.serialize(new WhatChangedDtos.ErrorResponseDTO(
+                'INTERNAL_ERROR',
+                ex.getTypeName() + ': ' + ex.getMessage() + ' (error id: ' + errorId + ')'
+            )));
         }
+    }
+
+    private static String newErrorId() {
+        return 'WC-' + String.valueOf(Math.abs(Crypto.getRandomInteger())).left(8);
+    }
+
+    private static void logError(String errorId, Exception ex) {
+        System.debug(LoggingLevel.ERROR,
+            'WhatChanged API error ' + errorId + ' | ' + ex.getTypeName() + ': ' + ex.getMessage() +
+            '\n' + ex.getStackTraceString());
+    }
+
+    private static Integer rangeToDays(String range, Integer defaultDays) {
+        if (String.isBlank(range)) return defaultDays;
+        if (range == '24h') return 1;
+        if (range == '7d') return 7;
+        if (range == '30d') return 30;
+        return defaultDays;
     }
 
     private static DateTime parseDateTime(String isoStr) {
