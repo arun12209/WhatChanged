@@ -121,6 +121,21 @@ private class WhatChangedEventNormalizerTest {
 
         raw.display = 'Changed approval process Opportunity_Approval';
         System.assertNotEquals(null, WhatChangedEventNormalizer.normalize(raw).title);
+
+        raw.action = 'flow';
+        raw.display = 'Deactivated flow with Name "Account After Save Demo 1" and Unique Name "Account_After_Save_Demo_1"';
+        System.assertEquals('Flow deactivated', WhatChangedEventNormalizer.normalize(raw).title, 'Deactivated flow display should produce Flow deactivated title');
+
+        raw.display = 'Deactivated Flow Account_Move_Wizard version 3';
+        System.assertEquals('Flow deactivated', WhatChangedEventNormalizer.normalize(raw).title, 'Deactivated Flow display should produce Flow deactivated title');
+
+        raw.action = 'flowdeactivated';
+        raw.display = 'Flow deactivated';
+        System.assertEquals('Flow deactivated', WhatChangedEventNormalizer.normalize(raw).title, 'flowdeactivated action should produce Flow deactivated title');
+
+        raw.action = 'flowactivated';
+        raw.display = 'Activated Flow Account_Move_Wizard version 3';
+        System.assertEquals('Flow activated', WhatChangedEventNormalizer.normalize(raw).title, 'Activated Flow display should produce Flow activated title');
     }
 
     @IsTest
