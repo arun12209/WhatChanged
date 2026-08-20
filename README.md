@@ -21,6 +21,35 @@ Turn Salesforce's raw, cryptic `SetupAuditTrail` and platform configuration even
 
 ---
 
+## 📸 Screenshots & Walkthrough
+
+### 1. Executive Overview Dashboard
+> Real-time platform KPI summary cards (*Changes Today, Automation, Access, Worth a Look*), hourly change activity breakdown, and rule-based heuristic highlights.
+
+![Overview Dashboard](docs/screenshots/01-overview-dashboard.png)
+
+### 2. Timeline & Change Stories
+> Searchable, real-time stream of Salesforce configuration events with 11 domain filters, Incident Mode, and automated story clustering.
+
+![Timeline & Change Stories](docs/screenshots/02-timeline-stories.png)
+
+### 3. Change Insights & Longitudinal Trends
+> 7-day and 30-day observability covering daily change volume, peak activity hours, top modified setup sections, and risk breakdown.
+
+![Insights & Trends](docs/screenshots/03-insights-trends.png)
+
+### 4. Active Contributor Intelligence
+> Real-time visibility into engineers, administrators, and automated service accounts making modifications across Salesforce.
+
+![Active Contributors](docs/screenshots/04-active-contributors.png)
+
+### 5. Platform Architecture & Domain Coverage
+> In-org execution details, 100% data privacy with zero external egress, and coverage across all 11 Salesforce administration domains.
+
+![About & Architecture](docs/screenshots/05-about-architecture.png)
+
+---
+
 ## 🏛️ Architecture
 
 ```
@@ -177,7 +206,8 @@ WhatChanged/
 │           └── dist/                      # Compiled production assets
 ├── docs/
 │   ├── ARCHITECTURE.md                    # Detailed architecture specifications
-│   └── DESIGN_SYSTEM.md                   # Visual tokens, styling, and UI components
+│   ├── DESIGN_SYSTEM.md                   # Visual tokens, styling, and UI components
+│   └── screenshots/                       # High-resolution application screenshots
 ├── sfdx-project.json
 ├── package.json
 └── README.md
